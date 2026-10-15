@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EarAudio Test</title>
+<style>
+  :root { --bg:#fafaf8; --fg:#1d1d1b; --mut:#6b6b66; --line:#ddd9d0; --btn:#fff; --acc:#2f5bd3; --ok:#1d7a3a; --bad:#b3261e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161615; --fg:#ecebe6; --mut:#9a9890; --line:#34332f; --btn:#22221f; --acc:#7b9cff; --ok:#5bc27a; --bad:#ff7a6e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:15px/1.4 system-ui,-apple-system,sans-serif; max-width:860px; }
+  h1 { font-size:20px; margin:0 0 12px; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin-bottom:14px; }
+  button { font:inherit; padding:6px 10px; border:1px solid var(--line); background:var(--btn); color:var(--fg); border-radius:6px; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  button.on { background:var(--acc); color:#fff; border-color:var(--acc); }
+  table { border-collapse:collapse; width:100%; }
+  td, th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:left; }
+  th { color:var(--mut); font-weight:500; font-size:13px; }
+  td.n { color:var(--mut); width:3em; }
+  .pass { color:var(--ok); font-weight:600; } .fail { color:var(--bad); font-weight:600; }
+  #status { color:var(--mut); font-size:13px; }
+  .wrap { overflow-x:auto; }
+  input[type=number] { width:4.5em; font:inherit; }
+</style>
+</head>
+<body>
+<h1>EarAudio test</h1>
+<div class="bar">
+  <span>Instrument:
+    <button id="i-guitar" class="on">Guitar</button>
+    <button id="i-piano">Piano</button>
+  </span>
+  <label>Root MIDI <input id="root" type="number" min="40" max="64" value="52"></label>
+  <label>Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+  <button id="stop">Stop</button>
+  <button id="seq">Sequence demo (M3 vs P4)</button>
+  <button id="selftest">Self-test</button>
+</div>
+<div id="status">Click any button to start audio.</div>
+<div class="wrap">
+<table id="grid"><thead><tr><th>#</th><th>Interval</th><th>Up</th><th>Down</th><th>Harmonic</th></tr></thead><tbody></tbody></table>
+</div>
+<h2 style="font-size:16px;margin-top:20px">Self-test results</h2>
+<div class="wrap"><table id="results"><thead><tr>
+  <th>Inst</th><th>Root</th><th>n</th><th>Expected 2^(n/12)</th><th>midiToFreq ratio</th><th>Measured ratio</th><th>Error (cents)</th><th>Result</th>
+</tr></thead><tbody></tbody></table></div>
+
+<script src="audio.js"></script>
+<script>
+(function () {
+  var NAMES = ['m2','M2','m3','M3','P4','TT','P5','m6','M6','m7','M7','P8'];
+  var status = document.getElementById('status');
+  function rootMidi() { return Math.max(40, Math.min(64, parseInt(document.getElementById('root').value, 10) || 52)); }
+
+  var tbody = document.querySelector('#grid tbody');
+  NAMES.forEach(function (name, i) {
+    var n = i + 1, tr = document.createElement('tr');
+    tr.innerHTML = '<td class="n">' + n + '</td><td>' + name + '</td>';
+    ['up','down','harmonic'].forEach(function (mode) {
+      var td = document.createElement('td'), b = document.createElement('button');
+      b.textContent = mode === 'up' ? '↑' : mode === 'down' ? '↓' : '≡';
+      b.title = name + ' ' + mode;
+      b.onclick = function () {
+        EarAudio.stop();
+        status.textContent = 'Playing ' + name + ' ' + mode + ' on ' + EarAudio.getInstrument() + '…';
+        EarAudio.playInterval(rootMidi(), n, mode).then(function (done) {
+          status.textContent = done ? 'Done: ' + name + ' ' + mode : 'Stopped';
+        }).catch(function (e) { status.textContent = 'Error: ' + e.message; console.error(e); });
+      };
+      td.appendChild(b); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  function setInst(name) {
+    EarAudio.setInstrument(name);
+    document.getElementById('i-guitar').classList.toggle('on', name === 'guitar');
+    document.getElementById('i-piano').classList.toggle('on', name === 'piano');
+  }
+  document.getElementById('i-guitar').onclick = function () { setInst('guitar'); EarAudio.init(); };
+  document.getElementById('i-piano').onclick = function () { setInst('piano'); EarAudio.init(); };
+  document.getElementById('stop').onclick = function () { EarAudio.stop(); };
+  document.getElementById('vol').oninput = function (e) { EarAudio.setVolume(parseFloat(e.target.value)); };
+  document.getElementById('seq').onclick = function () {
+    EarAudio.stop();
+    status.textContent = 'Sequence: your answer (M3 up) then correct (P4 up)…';
+    EarAudio.playSequence([
+      { rootMidi: rootMidi(), semitones: 4, mode: 'up' },
+      { rootMidi: rootMidi(), semitones: 5, mode: 'up' }
+    ], 0.6).then(function (done) { status.textContent = done ? 'Sequence done' : 'Sequence stopped'; });
+  };
+
+  // ---- pitch measurement: YIN coarse estimate, then windowed DFT peak refinement on partial 1
+  function yin(x, sr, fmin, fmax) {
+    var maxLag = Math.floor(sr / fmin), minLag = Math.floor(sr / fmax), W = maxLag * 2;
+    var d = new Float64Array(maxLag + 2), i, tau;
+    for (tau = 1; tau <= maxLag + 1; tau++) {
+      var s = 0; for (i = 0; i < W; i++) { var df = x[i] - x[i + tau]; s += df * df; } d[tau] = s;
+    }
+    var run = 0, cm = new Float64Array(maxLag + 2); cm[0] = 1;
+    for (tau = 1; tau <= maxLag + 1; tau++) { run += d[tau]; cm[tau] = d[tau] * tau / (run || 1); }
+    var best = -1;
+    for (tau = minLag; tau <= maxLag; tau++) {
+      if (cm[tau] < 0.15) { while (tau + 1 <= maxLag && cm[tau + 1] < cm[tau]) tau++; best = tau; break; }
+    }
+    if (best < 0) { var mv = Infinity; for (tau = minLag; tau <= maxLag; tau++) if (cm[tau] < mv) { mv = cm[tau]; best = tau; } }
+    var a = cm[best - 1], b = cm[best], c = cm[best + 1], den = a - 2 * b + c;
+    var t = best + (den ? 0.5 * (a - c) / den : 0);
+    return sr / t;
+  }
+  function dftMag(x, sr, f) {
+    var re = 0, im = 0, w = 2 * Math.PI * f / sr, N = x.length;
+    for (var i = 0; i < N; i++) {
+      var h = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1));
+      re += x[i] * h * Math.cos(w * i); im -= x[i] * h * Math.sin(w * i);
+    }
+    return re * re + im * im;
+  }
+  function refine(x, sr, f0) {
+    // search ±40 cents in 1-cent steps, then ±1 cent in 0.05-cent steps
+    var best = f0, bm = -1, c, f, m;
+    for (c = -40; c <= 40; c += 1) { f = f0 * Math.pow(2, c / 1200); m = dftMag(x, sr, f); if (m > bm) { bm = m; best = f; } }
+    var base = best; bm = -1;
+    for (c = -1; c <= 1.0001; c += 0.05) { f = base * Math.pow(2, c / 1200); m = dftMag(x, sr, f); if (m > bm) { bm = m; best = f; } }
+    return best;
+  }
+  function measure(inst, midi, sr) {
+    var data = EarAudio._renderNote(inst, midi, sr);
+    var seg = data.subarray(Math.floor(0.08 * sr), Math.floor(0.08 * sr) + Math.floor(0.5 * sr));
+    var coarse = yin(seg, sr, 60, 900);
+    return refine(seg, sr, coarse);
+  }
+
+  document.getElementById('selftest').onclick = function () {
+    EarAudio.init();
+    status.textContent = 'Running self-test…';
+    var rb = document.querySelector('#results tbody'); rb.innerHTML = '';
+    setTimeout(function () {
+      var sr = 48000, TOL = 2.0, pass = 0, total = 0, rows = [];
+      ['guitar', 'piano'].forEach(function (inst) {
+        [45, 64].forEach(function (root) {
+          var fr = measure(inst, root, sr);
+          for (var n = 1; n <= 12; n++) {
+            var expected = Math.pow(2, n / 12);
+            var theo = EarAudio.midiToFreq(root + n) / EarAudio.midiToFreq(root);
+            var meas = measure(inst, root + n, sr) / fr;
+            var cents = 1200 * Math.log2(meas / expected);
+            var ok = Math.abs(cents) < TOL && Math.abs(theo - expected) < 1e-9;
+            total++; if (ok) pass++;
+            rows.push({ inst: inst, root: root, n: n, expected: +expected.toFixed(6), midiToFreq: +theo.toFixed(6), measured: +meas.toFixed(6), cents: +cents.toFixed(3), pass: ok });
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + inst + '</td><td>' + root + '</td><td>' + n + ' ' + NAMES[n - 1] + '</td><td>' + expected.toFixed(6) +
+              '</td><td>' + theo.toFixed(6) + '</td><td>' + meas.toFixed(6) + '</td><td>' + cents.toFixed(3) +
+              '</td><td class="' + (ok ? 'pass' : 'fail') + '">' + (ok ? 'PASS' : 'FAIL') + '</td>';
+            rb.appendChild(tr);
+          }
+        });
+      });
+      console.table(rows);
+      var a4 = EarAudio.midiToFreq(69);
+      console.log('midiToFreq(69) =', a4, a4 === 440 ? 'PASS' : 'FAIL');
+      console.log('EarAudio self-test: ' + pass + '/' + total + ' passed (tolerance ±' + TOL + ' cents on rendered audio)');
+      status.textContent = 'Self-test: ' + pass + '/' + total + ' passed (A4 = ' + a4 + ' Hz). Tolerance ±' + TOL + ' cents, measured from rendered audio.';
+      window.__selfTest = { pass: pass, total: total, rows: rows };
+    }, 30);
+  };
+})();
+</script>
+</body>
+</html>
