@@ -501,8 +501,8 @@ button.rank-top { margin: -6px; padding: 6px; width: calc(100% + 12px); transiti
 .hint-note { font-size: 13px; color: var(--ink-3); }
 
 .answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-@media (min-width: 560px) { .answers { grid-template-columns: repeat(3, minmax(0, 1fr)); } .answers[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 680px) { .answers[data-count="4"], .answers[data-count="8"] { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 560px) { .answers { grid-template-columns: repeat(3, minmax(0, 1fr)); } .answers[data-n="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 680px) { .answers[data-n="4"], .answers[data-n="8"] { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .answer {
   position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px;
   min-height: 68px; padding: 12px 14px; border-radius: 14px;

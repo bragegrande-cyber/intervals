@@ -2,7 +2,7 @@
  * sw.js: offline cache for Intervals. Cache-first for the app's own files.
  * Bump VERSION whenever any precached file changes, so installs pick up the update.
  */
-var VERSION = 'intervals-v5.0.3';
+var VERSION = 'intervals-v5.0.4';
 var ASSETS = [
   './',
   'index.html',
@@ -23,7 +23,7 @@ var ASSETS = [
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ASSETS); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ASSETS.map(function (u) { return new Request(u, { cache: 'reload' }); })); }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', function (e) {

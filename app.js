@@ -501,7 +501,7 @@
       '</div>' +
       (cueBtn || (hint && !q.hinted) ? '<div class="mode-tools">' + cueBtn + (q.hinted ? '' : hint) + '</div>' : '') +
       (q.hinted ? hint : '') +
-      '<div class="answers" data-count="' + pool.length + '">' + grid + '</div>' +
+      '<div class="answers" data-n="' + pool.length + '">' + grid + '</div>' +
       (q.answered ? feedbackView() : '') +
       '</section>';
   }
@@ -1008,6 +1008,16 @@
 
   // Offline + installable when served over http(s). file:// keeps working without it.
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    window.addEventListener('load', function () {
+      var hadController = !!navigator.serviceWorker.controller, reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!hadController || reloaded) return;
+        reloaded = true;
+        location.reload();
+      });
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+        document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); });
+      }).catch(function () {});
+    });
   }
 })();
