@@ -39,6 +39,9 @@
  *   EarAudio.isPlaying()                -> boolean
  *   EarAudio.playChord(midis, style)    -> Promise. style 'arp' | 'block' | 'arp-block' (arpeggio up, then block).
  *   EarAudio.playChords([{midis, style}], gapSec = 0.5) -> Promise. Chords one after another.
+ *   EarAudio.playEvents([{ at, midis, ring, vel? }]) -> Promise. A timed list of chords or single notes:
+ *                                          at = seconds from the start, ring = seconds each event sounds.
+ *                                          Chords strum low to high on guitar. Used by progressions and scale degrees.
  *   EarAudio.RANGE                      -> { min: 40, max: 76 } recommended note range.
  *   EarAudio._renderNote(instrument, midi, sampleRate?) -> Float32Array (testing/inspection).
  */
@@ -600,6 +603,29 @@
     });
   }
 
+  /** Timed events (chords or single notes) on one clock: [{ at, midis, ring, vel? }]. */
+  function playEvents(events) {
+    var list = (events || []).map(function (ev) {
+      return { at: Math.max(0, Number(ev.at) || 0), ring: Math.max(0.1, Number(ev.ring) || 1),
+        vel: ev.vel, midis: (ev.midis || []).map(function (m) { return Math.round(Number(m)); }).sort(function (a, b) { return a - b; }) };
+    });
+    if (!list.length || list.some(function (ev) { return !ev.midis.length || ev.midis.some(function (m) { return !isFinite(m); }); })) {
+      return Promise.reject(new Error('playEvents: invalid events'));
+    }
+    var gen = generation;
+    return init().then(function () {
+      if (gen !== generation) return false;
+      var t0 = ctx.currentTime + LOOKAHEAD, inst = instrument, end = t0;
+      list.forEach(function (ev) {
+        var n = ev.midis.length, off = n > 1 ? (inst === 'guitar' ? 0.018 : 0.004) : 0;
+        var vel = ev.vel != null ? ev.vel : n === 1 ? 0.85 : n <= 3 ? 0.72 : n === 4 ? 0.64 : 0.58;
+        ev.midis.forEach(function (m, i) { startVoice(inst, m, t0 + ev.at + i * off, ev.ring - i * off, vel); });
+        end = Math.max(end, t0 + ev.at + ev.ring);
+      });
+      return waitUntil(end + RELEASE_TAIL * 0.5).then(function (ok) { return ok && gen === generation; });
+    });
+  }
+
   function stop() {
     generation++;
     pending.splice(0).forEach(function (p) { clearTimeout(p.timer); p.resolve(false); });
@@ -657,6 +683,7 @@
     playNotes: playNotes,
     playChord: playChord,
     playChords: playChords,
+    playEvents: playEvents,
     stop: stop,
     setVolume: setVolume,
     prewarm: prewarm,

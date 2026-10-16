@@ -131,7 +131,7 @@
     c.free.pool = (c.free.pool || []).filter(function (x, i, a) { return BY_ID[x] && a.indexOf(x) === i; });
     if (FREE_STYLES.indexOf(c.free.style) < 0) c.free.style = 'arp-block';
     s.ui = s.ui || {};
-    if (s.ui.section !== 'chords') s.ui.section = 'intervals';
+    if (['intervals', 'chords', 'progressions', 'degrees'].indexOf(s.ui.section) < 0) s.ui.section = 'intervals';
     s.lastPlay = s.lastPlay || {};
     return s;
   }

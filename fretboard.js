@@ -223,5 +223,37 @@
     return { svg: drawNeck(pts, desc, false), desc: desc, caption: caption, names: names };
   }
 
-  global.Fretboard = { render: render, renderChord: renderChord, placeChord: placeChord, chordGrade: chordGrade, spellTone: spellTone, place: place, noteName: noteName, spell: spell, noteWithOctave: noteWithOctave, TUNING: TUNING };
+  /** Notes played one after another may share a string (no chord shape needed): the most compact exact placement. */
+  function placeSingles(midis) {
+    var cands = midis.map(positions), best = null;
+    if (cands.some(function (c) { return !c.length; })) return null;
+    (function rec(i, acc) {
+      if (i === midis.length) {
+        var fr = acc.filter(function (p) { return p.f > 0; }).map(function (p) { return p.f; });
+        var span = fr.length ? Math.max.apply(null, fr) - Math.min.apply(null, fr) : 0;
+        var c = span * 3 + Math.max.apply(null, acc.map(function (p) { return p.f; })) * 0.2;
+        if (!best || c < best.cost) best = { pts: acc.slice(), cost: c };
+        return;
+      }
+      cands[i].forEach(function (p) { acc.push(p); rec(i + 1, acc); acc.pop(); });
+    })(0, []);
+    return best ? best.pts : null;
+  }
+
+  /**
+   * renderNotes([{ midi, label, cls }]) -> { svg, desc }
+   * Exact pitches with free labels (scale degrees). Duplicate pitches are drawn once (first label wins).
+   */
+  function renderNotes(list) {
+    var seen = {}, items = [];
+    (list || []).forEach(function (x) { if (!seen[x.midi]) { seen[x.midi] = 1; items.push(x); } });
+    items.sort(function (a, b) { return a.midi - b.midi; });
+    var pl = placeChord(items.map(function (x) { return x.midi; })) || placeSingles(items.map(function (x) { return x.midi; }));
+    if (!pl) return { svg: '', desc: '' };
+    var desc = pl.map(function (p, i) { return (items[i].name || items[i].label) + ' on the ' + where(p); }).join('. ') + '.';
+    var pts = pl.map(function (p, i) { return { s: p.s, f: p.f, label: items[i].label, cls: items[i].cls || 'fb-target' }; });
+    return { svg: drawNeck(pts, desc, false), desc: desc };
+  }
+
+  global.Fretboard = { render: render, renderChord: renderChord, renderNotes: renderNotes, placeChord: placeChord, chordGrade: chordGrade, spellTone: spellTone, place: place, noteName: noteName, spell: spell, noteWithOctave: noteWithOctave, TUNING: TUNING };
 })(window);

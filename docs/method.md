@@ -38,6 +38,17 @@ Egen seksjon (Intervals | Chords øverst). 19 akkordtyper i 9 pakker (Major vs m
 5. Master: omvending eller åpen gitarvoicing, tilfeldig instrument, kortere, maks 1 ekstra avspilling, ingen hint.
 Grunntoner velges slik at alle toner er innenfor EarAudio.RANGE og helst danner en spillbar gitarform (maks 5 bånd spenn); gripebrettet viser nøyaktig de tonene som ble spilt. Feil svar: hør ditt svar og riktig akkord fra samme grunntone og med samme voicing. Ingen sangeksempler per akkord (bare der vi er sikre; foreløpig ingen).
 
+## Progresjoner og skalatrinn (v7)
+Bryteren øverst har nå fire valg (Intervals · Chords · Progressions · Degrees), 2×2 på mobil og én rad fra 520 px. Valget huskes.
+
+**Progressions** (funksjonsharmonikk, romertall). Kort I–IV–V–I (moll: i–iv–V–i) setter tonearten, kort pause, så 3–4 blokkakkorder (~0,9 s hver) med glatt stemmeføring og bass på grunntonen en oktav under. Svaret bygges i ruter (angre, tøm, sjekk når fullt). Et spørsmål teller som riktig for stjerner bare når alle akkordene er riktige; XP gis per akkord. 7 pakker: Three chords, Pop four, Major diatonic, Minor keys, Borrowed & ♭VII, Blues, Jazz ii–V–I (jazz kan også starte på ii7). Generatoren vekter vanlige funksjonelle trinn (V→I, ii→V, IV→V, ♭VI→♭VII osv.) og kjente mønstre, og gir svake akkorder litt oftere. 10 spørsmål per nivå, stjerner ved 70/85/95 %.
+1. Home key: samme toneart hele nivået, 3 akkorder, første er gitt. 2. Any key: ny toneart hvert spørsmål. 3. Four chords. 4. Inversions: 3. eller 5. i bassen, løsere stemmeføring, starter ikke alltid på I. 5. Master: raskere, tilfeldig instrument, 1 replay, ingen kadens (progresjonen starter da på I/i, ellers er tonearten ikke entydig).
+Sangeksempler bare der akkordene er sikre: I–V–vi–IV (Let It Be vers, With or Without You, No Woman No Cry), vi–IV–I–V (Zombie), I–vi–IV–V (Stand By Me, Every Breath You Take), i–VI–III–VII (Despacito), 12-takters blues (Johnny B. Goode), ii–V–I (Autumn Leaves, åpningen).
+
+**Degrees** (Functional Ear Trainer-metoden, Alain Benbassat). Kadens, så én tone; svar med trinn (1, ♭2, 2, ♭3, 3, 4, ♯4, 5, ♭6, 6, ♭7, 7). Etter svaret går tonen trinnvis til nærmeste tonika gjennom tonartens skala (færrest trinn vinner, likt går ned; f.eks. 6–7–8, 4–3–2–1, 5–6–7–8). Pakker: Major 1 3 5, Major all seven, Minor all seven (naturlig moll, kadens i–iv–V–i), Chromatic, Melodic (2–3 toner i rekkefølge). 20 spørsmål per nivå.
+1. Home key, tonen i oktaven over tonika. 2. Any key. 3. Wide range (under tonika eller over oktaven). 4. Two notes. 5. Master: tre toner, tilfeldig instrument, ingen «Hear key», 1 replay.
+Gripebrettet viser tonika og tonen(e) med trinnnummer. Alle toner (kadens, akkorder, toner, oppløsning) holdes innenfor EarAudio.RANGE (40–76); sjekket over 200 genererte spørsmål per seksjon.
+
 ## Struktur (v6)
 Fanelinje: Train · Library · Progress · Settings. Train: bryter, kompakt rang-linje, ett «Continue»-kort (neste uferdige nivå eller guidet økt), pakker med stjerner, guidet sti og fri øving som rolige rader.
 

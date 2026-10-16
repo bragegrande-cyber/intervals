@@ -2,7 +2,7 @@
  * sw.js: offline cache for Intervals. Cache-first for the app's own files.
  * Bump VERSION whenever any precached file changes, so installs pick up the update.
  */
-var VERSION = 'intervals-v6.0.1';
+var VERSION = 'intervals-v7.0.2';
 var ASSETS = [
   './',
   'index.html',
@@ -13,6 +13,9 @@ var ASSETS = [
   'sfx.js',
   'audio.js',
   'fretboard.js',
+  'harmony.js',
+  'progressions.js',
+  'degrees.js',
   'data/anchors.js',
   'manifest.webmanifest',
   'icons/icon.svg',

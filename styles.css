@@ -837,3 +837,63 @@ body.has-tabs .toast { bottom: calc(var(--tabbar-h) + 16px + var(--sab)); }
   .ach-name { font-size: 14px; }
   .ach-desc { font-size: 12.5px; }
 }
+
+/* ---------------------------------------------------------------- v7: four sections, progressions, scale degrees */
+/* switcher with four options: 2×2 on phones, one row from 520px */
+.switcher.sw4 { grid-template-columns: 1fr 1fr; }
+.switcher.sw4::before { width: calc(50% - 3px); height: calc(50% - 3px); bottom: auto; transition: transform 0.3s var(--ease); }
+.switcher.sw4[data-i="1"]::before { transform: translateX(100%); }
+.switcher.sw4[data-i="2"]::before { transform: translateY(100%); }
+.switcher.sw4[data-i="3"]::before { transform: translate(100%, 100%); }
+.switcher.sw4 .sw-btn { height: 38px; font-size: 14.5px; }
+@media (pointer: coarse) { .switcher.sw4 .sw-btn { height: 42px; } }
+@media (min-width: 520px) {
+  .switcher.sw4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .switcher.sw4::before { width: calc(25% - 1.5px); height: auto; bottom: 3px; }
+  .switcher.sw4[data-i="1"]::before { transform: translateX(100%); }
+  .switcher.sw4[data-i="2"]::before { transform: translateX(200%); }
+  .switcher.sw4[data-i="3"]::before { transform: translateX(300%); }
+}
+@media (min-width: 760px) { .train > .switcher.sw4 { max-width: 560px; } }
+
+/* compact listen card so the answer builder stays on screen */
+.harm .listen { padding: 16px 16px 14px; }
+.harm .play { width: 88px; height: 88px; margin-bottom: 6px; }
+.harm .play-face svg { width: 36px; height: 36px; margin-left: 4px; }
+.harm .tools { margin-top: 4px; }
+
+/* answer slots */
+.slots-wrap { display: grid; gap: 10px; }
+.slots { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.slots[data-n="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.slots[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.slot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 62px; padding: 6px 4px;
+  border-radius: 14px; border: 1.5px dashed color-mix(in srgb, var(--ink-3) 40%, transparent); background: transparent;
+  transition: background-color 0.18s, border-color 0.18s, box-shadow 0.18s;
+}
+.slot-v { font: 700 21px/1 var(--f-round); letter-spacing: -0.01em; min-height: 21px; }
+.slot-sub { margin-top: 5px; font: 600 11.5px/1 var(--f-ui); color: var(--ink-3); }
+.slot.is-cur { border-style: solid; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.slot.is-filled { border-style: solid; border-color: transparent; background: var(--surface); box-shadow: var(--shadow-1); animation: slot-in 0.22s var(--ease-out); }
+.slot.is-given { border-style: solid; border-color: transparent; background: var(--surface-2); color: var(--ink-2); }
+.slot.is-ok { border-style: solid; border-color: var(--ok); background: var(--ok-soft); color: var(--ok-ink); }
+.slot.is-bad { border-style: solid; border-color: color-mix(in srgb, var(--bad) 60%, transparent); background: var(--bad-soft); color: var(--bad-ink); }
+.slot.is-bad .slot-sub { color: var(--ok-ink); }
+@keyframes slot-in { from { transform: scale(0.92); } }
+.slot-tools { display: grid; grid-template-columns: auto auto 1fr; gap: 8px; }
+.slot-tools .btn { height: 44px; padding: 0 16px; font-size: 15px; }
+.slot-tools .btn-plain:disabled { opacity: 0.45; }
+.answers.is-harm[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.answers.is-harm .answer { min-height: 60px; }
+.answers.is-roman .answer-code { font-size: 18px; }
+
+/* progression in the key */
+.prog-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.prog-strip[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pchord { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 6px; border-radius: 14px; background: var(--surface); text-align: center; min-width: 0; }
+.pchord.is-bad { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bad) 55%, transparent); }
+.pchord-n { font: 650 13px/1.2 var(--f-round); color: var(--ink-3); }
+.pchord-name { font: 700 19px/1.15 var(--f-round); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.pchord-you { font: 600 12px/1.2 var(--f-ui); color: var(--bad-ink); }
+.cell-sub.roman { font-weight: 600; color: var(--ink-2); }
