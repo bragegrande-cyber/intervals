@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1016" media="(prefers-color-scheme: dark)">
-  <meta name="description" content="Interval ear training with a guided path, game modes, ranks and achievements.">
+  <meta name="description" content="Interval and chord ear training for guitarists: game modes, chord packs, ranks and achievements.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -20,70 +20,28 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="bar">
-    <div class="bar-inner">
-      <button class="brand" type="button" data-action="home" aria-label="Home">
-        <img class="brand-mark" src="icons/icon.svg" alt="" width="28" height="28">
-        <span class="brand-word">Intervals</span>
-      </button>
-      <nav class="bar-actions" aria-label="Main">
-        <span class="hdr-streak" id="hdr-streak" title="Day streak"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2c.5 3.2 2.3 4.9 3.9 6.6C17.4 10.2 19 12 19 14.8 19 18.8 15.9 22 12 22s-7-3.2-7-7.2c0-2.3 1-4 2.4-5.3.3 1.6 1 2.8 2.2 3.4C9.4 9.2 10.2 5.2 12 2z"/></svg><span class="num">0</span><span class="sr-only"> day streak</span></span>
-        <button class="icon-btn" type="button" data-action="library" aria-label="Interval library (L)" title="Library (L)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19.5V5.5A1.5 1.5 0 0 1 6.5 4H19v13H6.5A1.5 1.5 0 0 0 5 18.5 1.5 1.5 0 0 0 6.5 20H19"/></svg>
-        </button>
-        <button class="icon-btn" type="button" data-action="progress" aria-label="Progress" title="Progress">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
-        </button>
-        <button class="icon-btn" type="button" data-action="settings" aria-label="Settings" title="Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h8M16 7h4M4 17h4M12 17h8"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
-        </button>
-      </nav>
-    </div>
-  </header>
-
   <main id="app" class="wrap" tabindex="-1"></main>
 
-  <dialog id="settings" class="sheet" aria-labelledby="settings-title">
-    <form method="dialog" class="sheet-inner">
-      <div class="sheet-head">
-        <h2 id="settings-title">Settings</h2>
-        <button class="btn btn-primary sheet-done" value="close">Done</button>
-      </div>
-
-      <p class="group-label" id="inst-label">Instrument</p>
-      <div class="seg" role="radiogroup" aria-labelledby="inst-label" id="set-instrument">
-        <label><input type="radio" name="inst" value="guitar"><span>Guitar</span></label>
-        <label><input type="radio" name="inst" value="piano"><span>Piano</span></label>
-        <label><input type="radio" name="inst" value="mix"><span>Alternate</span></label>
-      </div>
-      <p class="group-foot">Alternate switches sound from question to question, so you learn the interval, not the timbre. Master levels always pick at random.</p>
-
-      <div class="group">
-        <div class="cell cell-vol">
-          <label class="cell-title" for="set-volume">Volume</label>
-          <input type="range" id="set-volume" min="0" max="1" step="0.01">
-        </div>
-        <label class="cell cell-toggle">
-          <span class="cell-text">
-            <span class="cell-title">Sound effects</span>
-            <span class="cell-sub">Soft chimes for right, wrong, stars and rank-ups. Never over the interval.</span>
-          </span>
-          <input type="checkbox" id="set-sfx" class="switch" role="switch">
-        </label>
-      </div>
-      <p class="group-foot warn" id="storage-warn" hidden>Your browser is not saving progress right now. The app still works, but it will forget this session when you close it.</p>
-
-      <p class="group-label">Keyboard</p>
-      <div class="group keys">
-        <div class="cell"><span>Replay</span><span><kbd>Space</kbd></span></div>
-        <div class="cell"><span>Answer</span><span><kbd>1</kbd>&ndash;<kbd>9</kbd> <kbd>0</kbd> <kbd>-</kbd> <kbd>=</kbd></span></div>
-        <div class="cell"><span>Next question</span><span><kbd>Enter</kbd> / <kbd>Space</kbd></span></div>
-        <div class="cell"><span>Show on fretboard</span><span><kbd>F</kbd></span></div>
-        <div class="cell"><span>Hear scale or chord</span><span><kbd>H</kbd></span></div>
-        <div class="cell"><span>Interval library</span><span><kbd>L</kbd></span></div>
-      </div>
-    </form>
-  </dialog>
+  <nav class="tabbar" aria-label="Main">
+    <div class="tabbar-inner">
+      <button class="tab" type="button" data-action="tab" data-tab="train">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+        <span>Train</span>
+      </button>
+      <button class="tab" type="button" data-action="tab" data-tab="library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19.5V5.5A1.5 1.5 0 0 1 6.5 4H19v13H6.5A1.5 1.5 0 0 0 5 18.5 1.5 1.5 0 0 0 6.5 20H19"/></svg>
+        <span>Library</span>
+      </button>
+      <button class="tab" type="button" data-action="tab" data-tab="progress">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+        <span>Progress</span>
+      </button>
+      <button class="tab" type="button" data-action="tab" data-tab="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h8M16 7h4M4 17h4M12 17h8"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </nav>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -91,6 +49,7 @@
   <script src="audio.js"></script>
   <script src="sfx.js"></script>
   <script src="engine.js"></script>
+  <script src="chords.js"></script>
   <script src="fretboard.js"></script>
   <script src="app.js"></script>
 </body>

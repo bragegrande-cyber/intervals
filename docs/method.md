@@ -29,6 +29,18 @@ Hvert nivå = 20 spørsmål. Stjerner: 1 ved 70 %, 2 ved 85 %, 3 ved 95 %. Svar 
 4. Together: harmonisk.
 5. Master: tilfeldig opp/ned/samtidig, tilfeldig instrument, kortere toner, maks 1 ekstra avspilling, ikke gripebrett-hint.
 
+## Akkorder (v6)
+Egen seksjon (Intervals | Chords øverst). 19 akkordtyper i 9 pakker (Major vs minor, Triads, Suspended, Guitar essentials, Seventh chords, All sevenths, Sixths & add9, Jazz colors, Everything). Samme struktur som skalaene: 5 nivåer, 20 spørsmål, stjerner ved 70/85/95 %, hint teller som feil, 1 stjerne åpner neste nivå. Felles XP, rang og streak; 6 egne akkord-prestasjoner.
+1. Same root: samme grunntone hele nivået, arpeggio opp og så samlet akkord, grunnstilling.
+2. Any root: ny grunntone hvert spørsmål (aldri samme to ganger), arpeggio + akkord.
+3. Block: bare samlet akkord, grunnstilling.
+4. Inversions: samlet akkord, tilfeldig omvending.
+5. Master: omvending eller åpen gitarvoicing, tilfeldig instrument, kortere, maks 1 ekstra avspilling, ingen hint.
+Grunntoner velges slik at alle toner er innenfor EarAudio.RANGE og helst danner en spillbar gitarform (maks 5 bånd spenn); gripebrettet viser nøyaktig de tonene som ble spilt. Feil svar: hør ditt svar og riktig akkord fra samme grunntone og med samme voicing. Ingen sangeksempler per akkord (bare der vi er sikre; foreløpig ingen).
+
+## Struktur (v6)
+Fanelinje: Train · Library · Progress · Settings. Train: bryter, kompakt rang-linje, ett «Continue»-kort (neste uferdige nivå eller guidet økt), pakker med stjerner, guidet sti og fri øving som rolige rader.
+
 ## Kilder (verifiser gjerne selv)
 - Teoria, intervalløvelser: https://www.teoria.com/en/exercises/ (gradvis opplåsing av intervaller, melodisk/harmonisk)
 - musictheory.net, ear interval trainer: https://www.musictheory.net/exercises/ear-interval

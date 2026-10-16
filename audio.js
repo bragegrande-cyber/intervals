@@ -37,6 +37,8 @@
  *   EarAudio.setVolume(0..1)            Master volume (smoothed). Default 0.8.
  *   EarAudio.prewarm(midis?)            Optional: pre-render buffers (default: MIDI 40–76).
  *   EarAudio.isPlaying()                -> boolean
+ *   EarAudio.playChord(midis, style)    -> Promise. style 'arp' | 'block' | 'arp-block' (arpeggio up, then block).
+ *   EarAudio.playChords([{midis, style}], gapSec = 0.5) -> Promise. Chords one after another.
  *   EarAudio.RANGE                      -> { min: 40, max: 76 } recommended note range.
  *   EarAudio._renderNote(instrument, midi, sampleRate?) -> Float32Array (testing/inspection).
  */
@@ -545,6 +547,59 @@
     });
   }
 
+  // Chords. style 'arp' (notes roll up and keep ringing), 'block' (all together; guitar strums
+  // low to high), 'arp-block' (short arpeggio, then the block chord). Reuses startVoice.
+  var ARP_STEP = 0.3, CHORD_RING = 1.9, CHORD_GAP = 0.35;
+  function scheduleChord(list, style, when) {
+    var inst = instrument, n = list.length;
+    var vel = n <= 3 ? 0.74 : n === 4 ? 0.66 : 0.6;
+    var step = ARP_STEP * Math.max(0.7, lenScale), ring = CHORD_RING * lenScale, t = when, end = when;
+    if (style === 'arp' || style === 'arp-block') {
+      list.forEach(function (m, i) {
+        var r = style === 'arp' ? (n - 1 - i) * step + ring : step * 1.7;
+        startVoice(inst, m, t + i * step, r, Math.min(0.85, vel + 0.1));
+      });
+      end = t + (n - 1) * step + (style === 'arp' ? ring : step * 1.7);
+      t = t + n * step + CHORD_GAP;
+    }
+    if (style === 'block' || style === 'arp-block') {
+      var off = inst === 'guitar' ? 0.018 : 0.004;
+      list.forEach(function (m, i) { startVoice(inst, m, t + i * off, ring - i * off, vel); });
+      end = t + ring;
+    }
+    return end + RELEASE_TAIL;
+  }
+  function playChord(midis, style) {
+    var list = (midis || []).map(function (m) { return Math.round(Number(m)); }).sort(function (a, b) { return a - b; });
+    style = style || 'block';
+    if (['arp', 'block', 'arp-block'].indexOf(style) < 0) return Promise.reject(new Error("style must be 'arp', 'block' or 'arp-block'"));
+    if (!list.length || list.some(function (m) { return !isFinite(m); })) return Promise.reject(new Error('playChord: invalid notes'));
+    var gen = generation;
+    return init().then(function () {
+      if (gen !== generation) return false;
+      var end = scheduleChord(list, style, ctx.currentTime + LOOKAHEAD);
+      return waitUntil(end).then(function (ok) { return ok && gen === generation; });
+    });
+  }
+  /** Several chords in a row: [{ midis, style }], gapSec between them. */
+  function playChords(items, gapSec) {
+    var gap = gapSec == null ? 0.5 : Math.max(0, Number(gapSec)), list = (items || []).slice(), gen = generation;
+    return init().then(function () {
+      var i = 0;
+      function next() {
+        if (gen !== generation) return false;
+        if (i >= list.length) return true;
+        var it = list[i++];
+        return playChord(it.midis, it.style).then(function (ok) {
+          if (!ok || gen !== generation) return false;
+          if (i >= list.length) return true;
+          return waitUntil(ctx.currentTime + gap).then(next);
+        });
+      }
+      return next();
+    });
+  }
+
   function stop() {
     generation++;
     pending.splice(0).forEach(function (p) { clearTimeout(p.timer); p.resolve(false); });
@@ -600,6 +655,8 @@
     playInterval: playInterval,
     playSequence: playSequence,
     playNotes: playNotes,
+    playChord: playChord,
+    playChords: playChords,
     stop: stop,
     setVolume: setVolume,
     prewarm: prewarm,
